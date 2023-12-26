@@ -271,6 +271,7 @@ function Write-RegistryEntry {
 
             # Write the Data / Value pair to the registry
             try {
+               Write-Verbose -Message "Creating Key: $NewRegItem"
                 $Splat = @{
                     LiteralPath = "Microsoft.PowerShell.Core\Registry::$($_.LiteralPath.Replace('/',"$([char]0x2215)"))"
                     Name         = $_.Value
@@ -281,7 +282,6 @@ function Write-RegistryEntry {
                 }
 
                 $NewRegItem = New-ItemProperty @Splat #-WhatIf
-                Write-Verbose -Message "Created Key: $NewRegItem"
             }
             catch {
                 Write-Error $_
