@@ -16,14 +16,14 @@
 #=================================================================
 #region - Define PUBLIC Advanced Functions
 #=================================================================
-function Read-WSMRegFileToPSObject {
+function Read-RegFileToPSObject {
     <#
     .SYNOPSIS
         Reads a .REG file and converts the data to PS object
     .DESCRIPTION
         Parses .REG file and converts to PS Object using various schemes
     .EXAMPLE
-        Read-WSMRegFileToPSObject -LiteralPath c:\TEMP\RegistryContentFile.reg
+        Read-RegFileToPSObject -LiteralPath c:\TEMP\RegistryContentFile.reg
         
         LiteralPath                                Value            Data     Type
         -----------                                -----            ----     ----
@@ -121,15 +121,15 @@ function Read-WSMRegFileToPSObject {
     }
 }
 
-function Write-WSMRegistryEntry {
+function Write-RegistryEntry {
     <#
     .SYNOPSIS
         Writes PS Object registry data to the Windows Registry
     .DESCRIPTION
-        Takes data, in the output format of the Read-WSMRegFileToPSObject cmdlet, and writes it to the registry. 
+        Takes data, in the output format of the Read-RegFileToPSObject cmdlet, and writes it to the registry. 
         (Optionally, verbose for each item written)
     .EXAMPLE
-        Write-WSMRegistryEntry -RegistryData (Read-WSMRegFileToPSObject -LiteralPath c:\TEMP\RegistryContentFile.reg)
+        Write-RegistryEntry -RegistryData (Read-RegFileToPSObject -LiteralPath c:\TEMP\RegistryContentFile.reg)
     .INPUTS
         PSObject
     #>
@@ -185,7 +185,7 @@ function Write-WSMRegistryEntry {
                 # hex:<Binary data (as comma-delimited list of hexadecimal values)>
                 {$_.Type -eq 'hex'   }{
                     $Type = 'Binary'
-                    $Data =  $_.Data -split ',' | %{[System.Convert]::ToByte($_, 16)}
+                    $Data =  $_.Data -split ',' | ForEach-Object {[System.Convert]::ToByte($_, 16)}
                 }
 
                 # dword:<DWORD value integer>
@@ -290,7 +290,7 @@ function Write-WSMRegistryEntry {
     }
 }
 
-function Get-WSMBackgroundActivityMonitorEntries { 
+function Get-BackgroundActivityMonitorEntries { 
     Get-ChildItem registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings | ForEach-Object {
         $keySID = get-item $_.PsPath
         
@@ -387,7 +387,7 @@ function Convert-RegPathToLiteralPath {
 #=================================================================
 #region - Export Modules
 #=================================================================
-Export-ModuleMember -Function *-WSM*
+Export-ModuleMember -Function *
 #=================================================================
 #endregion - Export Modules
 #=================================================================
