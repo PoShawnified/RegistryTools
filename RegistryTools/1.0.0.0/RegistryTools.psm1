@@ -185,7 +185,7 @@ function Write-RegistryEntry {
                 # hex:<Binary data (as comma-delimited list of hexadecimal values)>
                 {$_.Type -eq 'hex'   }{
                     $Type = 'Binary'
-                    $Data =  $_.Data -split ',' | %{[System.Convert]::ToByte($_, 16)}
+                    $Data =  $_.Data -split ',' | ForEach-Object {[System.Convert]::ToByte($_, 16)}
                 }
 
                 # dword:<DWORD value integer>
