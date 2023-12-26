@@ -145,8 +145,8 @@ function Write-RegistryEntry {
         # We're either a 'Key' or we're a 'Data'/'Value' pair
         if ($_.Type -eq 'Key'){
             try {
-                $NewPathItem = New-Item -Path "Microsoft.PowerShell.Core\Registry::$($_.LiteralPath.Replace('/',"$([char]0x2215)"))" -Force -ErrorAction Stop #-WhatIf
-                Write-Verbose -Message "Created Key: $NewPathItem"
+               Write-Verbose -Message "Creating Key: $NewPathItem"
+               $NewPathItem = New-Item -Path "Microsoft.PowerShell.Core\Registry::$($_.LiteralPath.Replace('/',"$([char]0x2215)"))" -Force -ErrorAction Stop #-WhatIf
             }
             catch {
                 Write-Error $_
