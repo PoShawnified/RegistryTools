@@ -90,7 +90,7 @@ function Read-RegFileToPSObject {
             if ($Data -match '^"'){
                 $Type = 'String'
                 # Remove '\' escapes
-                $Data = $Data.Trim('"').Replace('\\','\')
+                $Data = [regex]::Unescape($Data.Trim('"'))
             }
             else {
                 # Split the type from the data e.g. hex(b):99,25,1c
