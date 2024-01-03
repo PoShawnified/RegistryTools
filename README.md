@@ -1,6 +1,25 @@
 # Tools to CRUD the Windows Registry
 
-# Additional raw notes/info
+## CMDLETS
+### Public
+#### `Read-RegFileToPSObject`
+Reads a .REG file and converts the data to PS object
+
+#### `Write-RegistryEntry`
+Takes data, in the output format of the Read-RegFileToPSObject cmdlet, and writes it to the registry. (Optionally, verbose for each item written)
+
+#### `Convert-RegPathToLiteralPath`
+Takes a string Registry path and adjusts the prefix to create a fully qualified PowerShell path.
+
+### Private
+#### `HexDataToString`
+Background data conversion for some hex data.  
+
+## Additional raw notes/info
+Starter for a struct type definition.  
+
+Musings about data challenges with different registry types.  
+
 ```
 <# 
 Add-Type -TypeDefinition @"
