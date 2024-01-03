@@ -290,6 +290,73 @@ function Write-RegistryEntry {
     }
 }
 
+function Convert-RegPathToLiteralPath {    
+   <#
+   .SYNOPSIS
+       Takes a string Registry path and adjusts the prefix to create a fully qualified PowerShell path.
+   .DESCRIPTION
+       Creates consistent Registry path prefixes. 
+   .EXAMPLE
+      Convert-RegPathToLiteralPath -Path 'hklm:\software'
+      Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\software
+   .INPUTS
+      [string]
+   .OUTPUTS
+      [string[]]
+   #>
+   [CmdletBinding()]
+   
+   [OutputType([string[]])]
+
+   Param (
+       [Parameter(
+           ValueFromPipeline,
+           Mandatory=$true
+       )]
+       [string[]]$Path
+   )
+   
+   process { 
+       $Path | ForEach-Object { 
+           # If the path comes in the HK*:\ format, we'll adjust it to a more universal standard
+           if ($_ -match "^HK(CU|LM|CC|CR|U)\:\\|^HKEY_(CURRENT_USER|LOCAL_MACHINE|CURRENT_CONFIG|CLASSES_ROOT|USER)\\") {
+
+               $thisInPath = $_
+           
+               switch ($thisInPath.Split('\', 2)[0]){
+                   {$_ -eq 'HKCU:'} {
+                       $convertedPath = $thisInPath -Replace 'HKCU:', 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER'
+                   }
+                   {$_ -eq 'HKLM:'} {
+                       $convertedPath = $thisInPath -Replace 'HKLM:', 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE'
+                   }
+                   {$_ -eq 'HKCC:'} {
+                       $convertedPath = $thisInPath -Replace 'HKCC:', 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_CONFIG'
+                   }
+                   {$_ -eq 'HKCR:'} {
+                       $convertedPath = $thisInPath -Replace 'HKCR:', 'Microsoft.PowerShell.Core\Registry::HKEY_CLASSES_ROOT'
+                   }
+                   {$_ -eq 'HKU:'} {
+                       $convertedPath = $thisInPath -Replace 'HKU:', 'Microsoft.PowerShell.Core\Registry::HKEY_USERS'
+                   }
+                   {$_ -in ('HKEY_CURRENT_USER','HKEY_LOCAL_MACHINE','HKEY_CURRENT_CONFIG','HKEY_CLASSES_ROOT','HKEY_USER')} {
+                       $convertedPath = "Microsoft.PowerShell.Core\Registry::$($thisInPath)"
+                   }
+               }
+               
+               Write-Verbose -Message "Converting: $thisInPath  -->  $convertedPath"
+               
+               [string]$convertedPath
+
+           }
+           else {
+               Write-Verbose -Message "Not converting: $_"
+               [string]$_
+           }
+       }
+   }
+}
+
 function Get-BackgroundActivityMonitorEntries { 
     Get-ChildItem registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings | ForEach-Object {
         $keySID = get-item $_.PsPath
@@ -327,59 +394,6 @@ function HexDataToString {
 
     [System.Text.Encoding]::ASCII.GetString($ByteArr)
 }
-
-function Convert-RegPathToLiteralPath {
-    [cmdletbinding()]
-    [OutputType([string[]])]
-
-    Param (
-        [Parameter(
-            ValueFromPipeline,
-            Mandatory=$true
-        )]
-        [string[]]$Path
-    )
-    
-    process { 
-        $Path | ForEach-Object { 
-            # If the path comes in the HK*:\ format, we'll adjust it to a more universal standard
-            if ($_ -match "^HK(CU|LM|CC|CR|U)\:\\|^HKEY_(CURRENT_USER|LOCAL_MACHINE|CURRENT_CONFIG|CLASSES_ROOT|USER)\\") {
-
-                $thisInPath = $_
-            
-                switch ($thisInPath.Split('\', 2)[0]){
-                    {$_ -eq 'HKCU:'} {
-                        $convertedPath = $thisInPath -Replace 'HKCU:', 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER'
-                    }
-                    {$_ -eq 'HKLM:'} {
-                        $convertedPath = $thisInPath -Replace 'HKLM:', 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE'
-                    }
-                    {$_ -eq 'HKCC:'} {
-                        $convertedPath = $thisInPath -Replace 'HKCC:', 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_CONFIG'
-                    }
-                    {$_ -eq 'HKCR:'} {
-                        $convertedPath = $thisInPath -Replace 'HKCR:', 'Microsoft.PowerShell.Core\Registry::HKEY_CLASSES_ROOT'
-                    }
-                    {$_ -eq 'HKU:'} {
-                        $convertedPath = $thisInPath -Replace 'HKU:', 'Microsoft.PowerShell.Core\Registry::HKEY_USERS'
-                    }
-                    {$_ -in ('HKEY_CURRENT_USER','HKEY_LOCAL_MACHINE','HKEY_CURRENT_CONFIG','HKEY_CLASSES_ROOT','HKEY_USER')} {
-                        $convertedPath = "Microsoft.PowerShell.Core\Registry::$($thisInPath)"
-                    }
-                }
-                
-                Write-Verbose -Message "Converting: $thisInPath  -->  $convertedPath"
-                
-                [string]$convertedPath
-
-            }
-            else {
-                Write-Verbose -Message "Not converting: $_"
-                [string]$_
-            }
-        }
-    }
-}
 #=================================================================
 #endregion - Define PRIVATE Advanced Functions
 #=================================================================
@@ -387,7 +401,6 @@ function Convert-RegPathToLiteralPath {
 #=================================================================
 #region - Export Modules
 #=================================================================
-Export-ModuleMember -Function *
 #=================================================================
 #endregion - Export Modules
 #=================================================================
