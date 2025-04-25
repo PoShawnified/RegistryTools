@@ -1,9 +1,15 @@
 # Tools to CRUD the Windows Registry
+## Problem Statement
+Often, when presented with a large number of registry entries to create/delete/modify, the go-to solution is to export to a `.reg` file, and use `reg.exe import <file.reg>` to import the changes, then verifying `reg.exe` exits `0`.
+
+The problem with this approach is there's no proof the import was successful for all changes in the `.reg` file. In all but the most egregious failures, `reg.exe` will return `0`.
+
+In the face of having to deconstruct large `.reg` files and then script each registry change action, many admins will live with this limitation not knowing whether their changes were truly successful.
 
 ## CMDLETS
 ### Public
 #### `Read-RegFileToPSObject`
-Reads a .REG file and converts the data to PS object
+Reads a `.REG` file and converts the data to PS object, ready for immediate use or export to transport (e.g. `Export-Clixml`, `ConvertTo-Json`, etc..).
 
 #### `Write-RegistryEntry`
 Takes data, in the output format of the Read-RegFileToPSObject cmdlet, and writes it to the registry. (Optionally, verbose for each item written)
